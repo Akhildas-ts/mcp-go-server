@@ -1,0 +1,23 @@
+run = "go run cmd/main.go"
+hidden = [".build", "*.exe", "*.exe~", "*.dll", "*.so", "*.dylib", "*.test", "*.out"]
+
+[nix]
+channel = "stable-22_11"
+
+[env]
+PORT = "8081"
+
+[packager]
+language = "go"
+
+[packager.features]
+packageSearch = true
+guessImports = true
+enabledForHosting = false
+
+[languages.go]
+pattern = "**/*.go"
+syntax = "go"
+
+[languages.go.languageServer]
+start = "gopls" 

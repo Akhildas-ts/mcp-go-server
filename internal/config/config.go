@@ -12,6 +12,9 @@ type Config struct {
 	PineconeHost        string
 	OpenAIAPIKey        string
 	MCPSecretToken      string
+	GitHubClientID      string
+	GitHubClientSecret  string
+	GitHubOAuthRedirectURL string
 }
 
 func Load() *Config {
@@ -23,6 +26,9 @@ func Load() *Config {
 		PineconeHost:        os.Getenv("PINECONE_HOST"),
 		OpenAIAPIKey:        os.Getenv("OPENAI_API_KEY"),
 		MCPSecretToken:      os.Getenv("MCP_SECRET_TOKEN"),
+		GitHubClientID:      os.Getenv("GITHUB_CLIENT_ID"),
+		GitHubClientSecret:  os.Getenv("GITHUB_CLIENT_SECRET"),
+		GitHubOAuthRedirectURL: os.Getenv("GITHUB_OAUTH_REDIRECT_URL"),
 	}
 }
 
