@@ -1,14 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"net/http"
-	"os"
 	"mcpserver/internal/config"
 	"mcpserver/internal/handler"
+	"mcpserver/internal/middleware"
 	"mcpserver/internal/service"
 	"mcpserver/internal/storage"
-	"mcpserver/internal/middleware"
+	"net/http"
+	"os"
 
 	"github.com/joho/godotenv"
 )
@@ -32,45 +33,50 @@ type Handlers struct {
 	MCP          *handler.MCPHandler
 }
 type OAuthConfig struct {
-    ClientID     string
-    ClientSecret string
-    RedirectURL  string
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
 }
 
 func main() {
-    // Load environment variables
-    if err := godotenv.Load(); err != nil {
-        log.Printf("Warning: Error loading .env file: %v", err)
-    }
+	// Load environment variables
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: Error loading .env file: %v", err)
+	}
 
-    handler.InitOAuthConfig() // Initialize OAuth config after env is loaded
+	handler.InitOAuthConfig() // Initialize OAuth config after env is loaded
 
-    // Create OAuth configuration
-    oauthConfig := &OAuthConfig{
-        ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
-        ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-        RedirectURL:  os.Getenv("GITHUB_OAUTH_REDIRECT_URL"),
-    }
+	// Create OAuth configuration
+	oauthConfig := &OAuthConfig{
+		ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
+		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("GITHUB_OAUTH_REDIRECT_URL"),
+	}
 
-    // Validate OAuth configuration
-    if oauthConfig.ClientID == "" || oauthConfig.ClientSecret == "" || oauthConfig.RedirectURL == "" {
-        log.Fatal("Missing required OAuth environment variables")
-    }
+	// Validate OAuth configuration
+	if oauthConfig.ClientID == "" || oauthConfig.ClientSecret == "" || oauthConfig.RedirectURL == "" {
+		log.Fatal("Missing required OAuth environment variables")
+	}
 
-    // Initialize server
-    server, err := initializeServer()
-    if err != nil {
-        log.Fatalf("Failed to initialize server: %v", err)
-    }
+	// Initialize server
+	server, err := initializeServer()
+	if err != nil {
+		log.Fatalf("Failed to initialize server: %v", err)
+	}
 
-    // Setup routes (pass OAuth config to routes)
-    router := setupRoutes(server.Handlers)
+	redirectURI := os.Getenv("GITHUB_OAUTH_REDIRECT_URL")
+	fmt.Printf("Raw redirect URI: '%s'\n", redirectURI)
+	fmt.Printf("Length: %d\n", len(redirectURI))
+	fmt.Printf("First 5 chars: %q\n", redirectURI[:5])
+	fmt.Printf("Last 5 chars: %q\n", redirectURI[len(redirectURI)-5:])
+	// Setup routes (pass OAuth config to routes)
+	router := setupRoutes(server.Handlers)
 
-    // Start server
-    log.Printf("MCP Server starting on port %s...", server.Config.Port)
-    if err := http.ListenAndServe(":"+server.Config.Port, router); err != nil {
-        log.Fatalf("Server failed to start: %v", err)
-    }
+	// Start server
+	log.Printf("MCP Server starting on port %s...", server.Config.Port)
+	if err := http.ListenAndServe(":"+server.Config.Port, router); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }
 func initializeServer() (*Server, error) {
 	// Load configuration
